@@ -56,8 +56,8 @@ func sendEmail() error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", CONFIG_SENDER_NAME)
 	mailer.SetHeader("To", "martin.mada1134@gmail.com")
-	mailer.SetHeader("Subject", "Test mail")
-	mailer.SetBody("text/html", "Hello, <b>have a nice day</b>")
+	mailer.SetHeader("Subject", "Penawaran Spesial!")
+	mailer.SetBody("text/html", "Selamat datang di toko kami! Kami senang ingin memberikan penawaran spesial kepada Anda.<b>Dapatkan diskon 20%</b> untuk semua produk kami! Jangan lewatkan kesempatan ini untuk berbelanja dengan harga terbaik.Gunakan kode diskon <strong>'SPESIAL20'</strong> saat checkout untuk mengaktifkan penawaran ini.")
 
 	dialer := gomail.NewDialer(
 		CONFIG_SMTP_HOST,
