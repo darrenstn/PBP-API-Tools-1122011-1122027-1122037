@@ -10,6 +10,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"gopkg.in/gomail.v2"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
@@ -27,9 +28,17 @@ func main() {
 
 	// Menambahkan job Cron untuk mengirim email setiap 5 menit
 	_, err := c.AddFunc("*/1 * * * *", func() {
-		err := sendEmail()
+		recipient := controllers.GetEmailWithContent("SILVER")
+		err := sendEmail(recipient.Email, recipient.Content)
 		if err != nil {
 			log.Println("Gagal mengirim email:", err)
+		} else {
+			log.Println("Email terkirim pada", time.Now())
+		}
+		recipient2 := controllers.GetEmailWithContent("GOLD")
+		err2 := sendEmail(recipient2.Email, recipient2.Content)
+		if err2 != nil {
+			log.Println("Gagal mengirim email:", err2)
 		} else {
 			log.Println("Email terkirim pada", time.Now())
 		}
@@ -52,12 +61,12 @@ func main() {
 }
 
 // sendEmail mengirimkan email
-func sendEmail() error {
+func sendEmail(email string, content string) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", CONFIG_SENDER_NAME)
-	mailer.SetHeader("To", "martin.mada1134@gmail.com")
+	mailer.SetHeader("To", email)
 	mailer.SetHeader("Subject", "Penawaran Spesial!")
-	mailer.SetBody("text/html", "Selamat datang di toko kami! Kami senang ingin memberikan penawaran spesial kepada Anda.<b>Dapatkan diskon 20%</b> untuk semua produk kami! Jangan lewatkan kesempatan ini untuk berbelanja dengan harga terbaik.Gunakan kode diskon <strong>'SPESIAL20'</strong> saat checkout untuk mengaktifkan penawaran ini.")
+	mailer.SetBody("text/html", content)
 
 	dialer := gomail.NewDialer(
 		CONFIG_SMTP_HOST,

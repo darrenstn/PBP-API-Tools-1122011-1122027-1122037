@@ -21,3 +21,8 @@ type Response struct {
 	Status  int    `json:"status"`
 	Message string `json:"message"`
 }
+
+type Recipients struct {
+	Email   string
+	Content string
+}
