@@ -2,9 +2,11 @@ package main
 
 import (
 	"PBP-API-Tools-1122011-1122027-1122037/controllers"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -14,29 +16,26 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	CONFIG_SMTP_HOST     = "smtp.gmail.com"
-	CONFIG_SMTP_PORT     = 587
-	CONFIG_SENDER_NAME   = "if-22027@students.ithb.ac.id"
-	CONFIG_AUTH_EMAIL    = "if-22027@students.ithb.ac.id"
-	CONFIG_AUTH_PASSWORD = "Ithb-2023"
-)
-
 func main() {
 	// Inisialisasi Cron
 	c := cron.New()
 
+	config, errConfig := loadConfig("config.json")
+	if errConfig != nil {
+		log.Fatal("Error loading configuration:", errConfig)
+	}
+
 	// Menambahkan job Cron untuk mengirim email setiap 5 menit
 	_, err := c.AddFunc("*/1 * * * *", func() {
 		recipient := controllers.GetEmailWithContent("SILVER")
-		err := sendEmail(recipient.Email, recipient.Content)
+		err := sendEmail(config, recipient.Email, recipient.Content)
 		if err != nil {
 			log.Println("Gagal mengirim email:", err)
 		} else {
 			log.Println("Email terkirim pada", time.Now())
 		}
 		recipient2 := controllers.GetEmailWithContent("GOLD")
-		err2 := sendEmail(recipient2.Email, recipient2.Content)
+		err2 := sendEmail(config, recipient2.Email, recipient2.Content)
 		if err2 != nil {
 			log.Println("Gagal mengirim email:", err2)
 		} else {
@@ -60,19 +59,41 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8888", router))
 }
 
+type Config struct {
+	SMTPHost     string `json:"SMTP_HOST"`
+	SMTPPort     int    `json:"SMTP_PORT"`
+	AuthEmail    string `json:"AUTH_EMAIL"`
+	AuthPassword string `json:"AUTH_PASSWORD"`
+}
+
+func loadConfig(filename string) (Config, error) {
+	var config Config
+	configFile, err := os.Open(filename)
+
+	if err != nil {
+		return config, err
+	}
+	defer configFile.Close()
+	err = json.NewDecoder(configFile).Decode(&config)
+	if err != nil {
+		return config, err
+	}
+	return config, nil
+}
+
 // sendEmail mengirimkan email
-func sendEmail(email string, content string) error {
+func sendEmail(config Config, email string, content string) error {
 	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", CONFIG_SENDER_NAME)
+	mailer.SetHeader("From", config.AuthEmail)
 	mailer.SetHeader("To", email)
 	mailer.SetHeader("Subject", "Penawaran Spesial!")
 	mailer.SetBody("text/html", content)
 
 	dialer := gomail.NewDialer(
-		CONFIG_SMTP_HOST,
-		CONFIG_SMTP_PORT,
-		CONFIG_AUTH_EMAIL,
-		CONFIG_AUTH_PASSWORD,
+		config.SMTPHost,
+		config.SMTPPort,
+		config.AuthEmail,
+		config.AuthPassword,
 	)
 
 	err := dialer.DialAndSend(mailer)

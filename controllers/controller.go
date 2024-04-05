@@ -84,7 +84,7 @@ func GetEmailWithContent(status string) m.Recipients {
 	var tempEmail string
 	var email string
 
-	content = "Rekomendasi Produk buat Pelanggan Berstatus " + status + "\n\n"
+	content = "Rekomendasi Produk buat Pelanggan Berstatus " + status + "<br><br>"
 
 	// Channel to receive the content from the products query
 	productCh := make(chan string)
@@ -116,7 +116,7 @@ func GetEmailWithContent(status string) m.Recipients {
 				log.Println("Scan Error:", err)
 				return
 			}
-			content += fmt.Sprintf("Product ID: %d\nName: %s\nPrice: %.2f\nProduct Description:%s\n\n", product.ID, product.ProductName, product.ProductPrice, product.ProductDescription)
+			content += fmt.Sprintf("Product ID: %d<br>Name: %s<br>Price: %.2f<br>Product Description:%s<hr><br>", product.ID, product.ProductName, product.ProductPrice, product.ProductDescription)
 		}
 
 		// Send the content through the channel

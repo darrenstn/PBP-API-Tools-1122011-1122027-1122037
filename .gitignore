@@ -1,2 +1,5 @@
 /go.mod
 /go.sum
+
+# Ignore config.json file
+/config.json
